@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Visualizzazione</title>
+    <link rel="stylesheet" href="style.css" />
+    <style>
+      :root {
+        --contenitore-analisi: 900px;
+      }
+    </style>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  </head>
+
+  <body>
+    <script>
+      (function () {
+        const tema = localStorage.getItem("tema");
+        if (tema === "scuro") {
+          document.body.classList.add("dark-theme");
+        }
+      })();
+    </script>
+
+    <button id="toggle-theme" aria-label="Cambia tema"></button>
+    <div id="theme-menu" class="theme-dropdown hidden">
+      <strong id="label-tema">Tema</strong>
+      <div class="theme-option" data-theme="chiaro" id="opt-chiaro">Chiaro</div>
+      <div class="theme-option" data-theme="scuro" id="opt-scuro">Scuro</div>
+      <hr />
+      <strong id="label-accessibilita">Accessibilità</strong>
+      <div class="dalton-option" data-dalton="nessuno" id="opt-nessuno">
+        Nessun filtro
+      </div>
+      <div class="dalton-option" data-dalton="protanopia" id="opt-protanopia">
+        Protanopia
+      </div>
+      <div
+        class="dalton-option"
+        data-dalton="deuteranopia"
+        id="opt-deuteranopia"
+      >
+        Deuteranopia
+      </div>
+      <div class="dalton-option" data-dalton="tritanopia" id="opt-tritanopia">
+        Tritanopia
+      </div>
+      <div
+        class="dalton-option"
+        data-dalton="acromatopsia"
+        id="opt-acromatopsia"
+      >
+        Acromatopsia
+      </div>
+    </div>
+
+    <button id="toggle-language" aria-label="Cambia lingua">IT</button>
+
+    <h1 id="vis-title">Visualizzazione dei Risultati</h1>
+
+    <p
+      id="flag-info"
+      style="text-align: center; font-size: 14px; margin-top: 8px"
+    ></p>
+    <div
+      id="scelte-utente"
+      style="text-align: center; font-size: 14px; margin-top: 8px"
+    ></div>
+
+    <nav class="breadcrumb">
+      <a href="index.html" id="breadcrumb-home">Home</a> &gt;
+      <a href="elaborazione.html" id="breadcrumb-processing">Elaborazione</a>
+      &gt;
+      <span id="breadcrumb-visual" class="current">Visualizzazione</span>
+    </nav>
+
+    <p id="vis-desc">Ecco i risultati ottenuti.</p>
+
+    <div id="toxicity-legend" style="margin-top: 20px">
+      <h3>Classi di tossicità:</h3>
+      <span class="no-toxicity">no toxicity</span>,
+      <span class="low-toxicity">low toxicity</span>,
+      <span class="medium-toxicity">medium toxicity</span>,
+      <span class="high-toxicity">high toxicity</span>
+    </div>
+
+    <section id="graficocontainer" class="grafico-box">
+      <h2 id="grafico-title">Sezione Grafico</h2>
+      <div id="context" style="margin-top: 20px"></div>
+      <div id="focus" style="margin-top: 40px"></div>
+      <div id="daily" style="margin-top: 40px"></div>
+      <div id="toolbar" style="margin-top: 20px"></div>
+    </section>
+
+    <div class="grafico-buttons">
+      <div class="export-menu-wrapper">
+        <button id="btn-esporta">Esporta</button>
+        <div id="export-menu" class="hidden export-menu">
+          <div id="export-png">Esporta in PNG</div>
+          <div id="export-csv">Esporta per PAOHVis</div>
+        </div>
+      </div>
+      <button class="btn-nuova-analisi">Nuova Analisi</button>
+    </div>
+
+    <script>
+      function evidenziaTemaFiltro() {
+        const tema = localStorage.getItem("tema") || "chiaro";
+        const filtro = localStorage.getItem("daltonismo") || "nessuno";
+
+        document.querySelectorAll(".theme-option").forEach((el) => {
+          el.classList.toggle("active", el.dataset.theme === tema);
+        });
+
+        document.querySelectorAll(".dalton-option").forEach((el) => {
+          el.classList.toggle("active", el.dataset.dalton === filtro);
+        });
+      }
+
+      function aggiornaTestiMenuTema(lang) {
+        document.getElementById("label-tema").textContent =
+          lang === "it" ? "Tema" : "Theme";
+        document.getElementById("label-accessibilita").textContent =
+          lang === "it" ? "Accessibilità" : "Accessibility";
+        document.getElementById("opt-chiaro").textContent =
+          lang === "it" ? "Chiaro" : "Light";
+        document.getElementById("opt-scuro").textContent =
+          lang === "it" ? "Scuro" : "Dark";
+        document.getElementById("opt-nessuno").textContent =
+          lang === "it" ? "Nessun filtro" : "No filter";
+        document.getElementById("opt-protanopia").textContent = "Protanopia";
+        document.getElementById("opt-deuteranopia").textContent =
+          "Deuteranopia";
+        document.getElementById("opt-tritanopia").textContent = "Tritanopia";
+        document.getElementById("opt-acromatopsia").textContent =
+          "Achromatopsia";
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        const linguaSalvata = localStorage.getItem("lingua") || "it";
+        aggiornaTestiMenuTema(linguaSalvata);
+
+        // Questa pagina visualizza SOLO chat. Controllo direttamente sui dati.
+        const chatLinksData = localStorage.getItem("chatLinks");
+
+        // Se non ci sono dati per il grafico, mostra un errore e si ferma
+        if (!chatLinksData || chatLinksData === "[]") {
+          document.getElementById("graficocontainer").innerHTML = `
+          <h2>Errore</h2>
+          <p>Dati della chat non trovati. Questo può accadere se si tenta di visualizzare un file di testo semplice in questa pagina o se l'analisi non è riuscita.</p>
+          <p>Si prega di tornare alla <a href="index.html">Home</a> e iniziare una nuova analisi.</p>
+        `;
+          document.querySelector(".grafico-buttons").style.display = "none"; // Nasconde i bottoni
+          return; // Interrompe l'esecuzione
+        }
+
+        // Se i dati esistono, si procede normalmente
+        const flags = (localStorage.getItem("chatFlags") || "").split(" ");
+        const t = {
+          it: {
+            titolo: "Visualizzazione dei Risultati",
+            descrizione: "Ecco il grafico dei risultati.",
+            esporta: "Esporta",
+            nuovaAnalisi: "Nuova Analisi",
+            home: "Home",
+            elaborazione: "Elaborazione",
+            visualizzazione: "Visualizzazione",
+            sezioneGrafico: "Grafico dei Risultati",
+            opzioni: "Opzioni attive:",
+            api: flags.includes("-h")
+              ? "Analisi con API attiva"
+              : "Analisi con API disattivata",
+            contenuto: flags.includes("-c")
+              ? "Contenuto dei messaggi visibile"
+              : "Contenuto dei messaggi nascosto",
+          },
+          en: {
+            titolo: "Results Visualization",
+            descrizione: "Here is the results graph.",
+            esporta: "Export",
+            nuovaAnalisi: "New Analysis",
+            home: "Home",
+            elaborazione: "Processing",
+            visualizzazione: "Visualization",
+            sezioneGrafico: "Results Graph",
+            opzioni: "Active options:",
+            api: flags.includes("-h")
+              ? "API analysis enabled"
+              : "API analysis disabled",
+            contenuto: flags.includes("-c")
+              ? "Message content visible"
+              : "Message content hidden",
+          },
+        }[linguaSalvata];
+
+        document.getElementById("toggle-language").textContent =
+          linguaSalvata.toUpperCase();
+        document.getElementById("vis-title").textContent = t.titolo;
+        document.getElementById("vis-desc").textContent = t.descrizione;
+        document.getElementById("btn-esporta").textContent = t.esporta;
+        document.querySelector(".btn-nuova-analisi").textContent =
+          t.nuovaAnalisi;
+        document.getElementById("breadcrumb-home").textContent = t.home;
+        document.getElementById("breadcrumb-processing").textContent =
+          t.elaborazione;
+        document.getElementById("breadcrumb-visual").textContent =
+          t.visualizzazione;
+        document.getElementById("grafico-title").textContent = t.sezioneGrafico;
+
+        document.getElementById("toxicity-legend").style.display = "none";
+        const htmlOpzioni = `
+        <strong>${t.opzioni}</strong><br>
+        <ul style="margin-top: 4px; padding-left: 0; list-style-position: inside; display: inline-block; text-align: left;">
+          <li>${t.api}</li>
+          <li>${t.contenuto}</li>
+        </ul>`;
+        document.getElementById("scelte-utente").innerHTML = htmlOpzioni;
+
+        // Carica lo script del grafico solo se ci sono i dati
+        const script = document.createElement("script");
+        script.type = "module";
+        script.src = "main.js";
+        document.body.appendChild(script);
+
+        // Gestione menu accessibilità e tema
+        const themeButton = document.getElementById("toggle-theme");
+        const themeMenu = document.getElementById("theme-menu");
+        themeButton.addEventListener("click", (e) => {
+          e.stopPropagation();
+          themeMenu.classList.toggle("hidden");
+        });
+        document.addEventListener("click", (e) => {
+          if (!themeMenu.contains(e.target) && e.target !== themeButton)
+            themeMenu.classList.add("hidden");
+        });
+        document.querySelectorAll(".theme-option").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            localStorage.setItem("tema", btn.dataset.theme);
+            location.reload();
+          });
+        });
+        document.querySelectorAll(".dalton-option").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            localStorage.setItem("daltonismo", btn.dataset.dalton);
+            location.reload();
+          });
+        });
+
+        // Cambio lingua
+        document
+          .getElementById("toggle-language")
+          .addEventListener("click", () => {
+            const nuovaLingua = linguaSalvata === "it" ? "en" : "it";
+            localStorage.setItem("lingua", nuovaLingua);
+            location.reload();
+          });
+
+        // Nuova analisi
+        document
+          .querySelector(".btn-nuova-analisi")
+          .addEventListener("click", () => {
+            window.location.href = "index.html";
+          });
+
+        evidenziaTemaFiltro();
+      });
+
+      // Logica Esportazione
+      const btnEsporta = document.getElementById("btn-esporta");
+      const menuEsporta = document.getElementById("export-menu");
+      btnEsporta.addEventListener("click", (e) => {
+        e.stopPropagation();
+        menuEsporta.classList.toggle("hidden");
+      });
+      document.addEventListener("click", (e) => {
+        if (!menuEsporta.contains(e.target) && e.target !== btnEsporta)
+          menuEsporta.classList.add("hidden");
+      });
+      document.getElementById("export-png").addEventListener("click", () => {
+        html2canvas(document.getElementById("graficocontainer"), {
+          backgroundColor: null,
+          scale: 2,
+        }).then((canvas) => {
+          const link = document.createElement("a");
+          link.download = "grafico_completo.png";
+          link.href = canvas.toDataURL("image/png");
+          link.click();
+        });
+        menuEsporta.classList.add("hidden");
+      });
+      document.getElementById("export-csv").addEventListener("click", () => {
+        const links = JSON.parse(localStorage.getItem("chatLinks") || "[]");
+        if (!links.length) return alert("Nessun dato disponibile.");
+        let csv =
+          "edge_id,node_name,time_slot,edge_name_description,group_name,role\n";
+        let edgeId = 0;
+        const grouped = new Map();
+        for (const d of links) {
+          const group = d.group ?? "gruppo1";
+          const key = `${d.source}||${new Date(
+            d.timeSlot
+          ).toISOString()}||${group}`;
+          if (!grouped.has(key)) grouped.set(key, []);
+          grouped.get(key).push(d);
+        }
+        for (const [key, messaggi] of grouped.entries()) {
+          const [source, timeStr, group] = key.split("||");
+          const msg =
+            messaggi[0].message
+              ?.replace(/\u200E/g, "")
+              .replace(/\n/g, " ")
+              .replace(/"/g, '""')
+              .trim() || "-";
+          csv +=
+            [
+              edgeId,
+              `"${source}"`,
+              `"${timeStr}"`,
+              `"${msg}"`,
+              `"${group}"`,
+              "mittente",
+            ].join(",") + "\n";
+          const targets = new Set(messaggi.map((m) => m.target));
+          for (const target of targets) {
+            csv +=
+              [
+                edgeId,
+                `"${target}"`,
+                `"${timeStr}"`,
+                `"${msg}"`,
+                `"${group}"`,
+                "destinatario",
+              ].join(",") + "\n";
+          }
+          edgeId++;
+        }
+        const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "paohvis_export.csv";
+        a.click();
+        menuEsporta.classList.add("hidden");
+      });
+    </script>
+  </body>
+</html>

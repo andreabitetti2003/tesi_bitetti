@@ -1,0 +1,1064 @@
+/* ==========================================================================
+   STILI BASE DELLA PAGINA
+========================================================================== */
+
+body {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  color: #333;
+  margin: 0;
+  padding: 40px 20px; /* Spaziatura interna sopra/sotto e ai lati */
+  text-align: center;
+  min-height: 100vh; /* Altezza minima: 100% della finestra */
+  background-color: beige; /* Sfondo beige */
+  padding-top: 80px; /* server per evitare che la barra fissa copra il contenuto */
+}
+
+h1 {
+  font-size: 3rem;
+  margin-bottom: 20px; /* Spazio sotto il titolo */
+  color: #2c3e50;
+  letter-spacing: -1px; /* Riduce lo spazio tra le lettere */
+  margin-top: 0px;
+}
+
+p {
+  font-size: 1.2rem;
+  max-width: 600px; /* Larghezza massima del paragrafo */
+  margin: 0 auto; /* Centra il paragrafo orizzontalmente */
+  color: #555;
+  line-height: 1.6; /* Altezza delle righe per una lettura più comoda */
+}
+
+/* =============================================================================
+   BOTTONI GENERALI
+============================================================================= */
+
+.button-group {
+  display: flex; /* Allinea i bottoni in riga */
+  justify-content: center; /* Centra orizzontalmente */
+  gap: 40px; /* Spazio tra i bottoni */
+  margin-top: 50px; /* Spazio sopra il gruppo di bottoni */
+}
+
+.button-group button {
+  padding: 12px 24px; /* Spazio interno ai bottoni */
+  font-size: 16px;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  border-radius: 8px; /* Angoli arrotondati */
+  transition: background-color 0.3s ease, transform 0.2s ease; /* Animazioni fluide */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Leggera ombra */
+  cursor: pointer; /* Mano al passaggio */
+  min-width: 160px; /* Dimensione minima uniforme */
+  text-align: center;
+}
+
+.button-group button:hover {
+  background-color: #2980b9; /* Cambia il blu in più scuro */
+  transform: translateY(-2px); /* Effetto “sollevato” */
+}
+
+/* ==========================================================================
+   BREADCRUMB
+========================================================================== */
+
+.breadcrumb {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 16px;
+  margin-bottom: 20px; /* Spazio sotto */
+  display: flex; /* Flexbox per allineamento */
+  justify-content: center;
+  gap: 8px; /* Spazio tra elementi */
+  align-items: center; /* Allineamento verticale */
+}
+
+.breadcrumb a {
+  text-decoration: none; /* Rimuove sottolineatura */
+  color: #007bff; /* Colore blu */
+  transition: color 0.3s; /* Transizione colore */
+  position: relative; /* Necessario per effetti extra */
+}
+
+.breadcrumb a:hover {
+  color: #0056b3; /* Colore più scuro al passaggio */
+}
+
+.breadcrumb span.current {
+  color: #007bff; /* Colore attivo */
+  font-weight: bold; /* Grassetto */
+}
+
+.breadcrumb span.disabled {
+  color: #bbb;
+  font-weight: normal;
+}
+
+/* ==========================================================================
+   FOOTER
+========================================================================== */
+
+footer {
+  margin-top: 60px; /* Spazio sopra */
+  padding-top: 20px; /* Spazio interno sopra */
+  border-top: 1px solid #ddd; /* Linea divisoria */
+  text-align: center; /* Testo centrato */
+  font-size: 0.9rem;
+  color: #888;
+}
+
+.btn-avanti {
+  display: inline-block; /* Blocco in linea */
+  margin-top: 30px; /* Spazio sopra */
+  padding: 12px 24px; /* Spaziatura interna */
+  font-size: 16px; /* Dimensione testo */
+  background-color: #3498db; /* Sfondo blu */
+  color: white; /* Testo bianco */
+  border: none; /* Nessun bordo */
+  border-radius: 8px; /* Angoli arrotondati */
+  transition: background-color 0.3s ease, transform 0.2s ease; /* Transizioni */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Ombra */
+  cursor: pointer; /* Cursore puntatore */
+  text-decoration: none; /* Nessuna sottolineatura */
+  text-align: center; /* Allinea il testo */
+}
+
+.btn-avanti:hover {
+  background-color: #2980b9; /* Colore al passaggio */
+  transform: translateY(-2px); /* Effetto sollevamento */
+}
+
+#risultato {
+  text-align: center;
+  margin-top: 30px;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* ==========================================================================
+   BARRA DI CARICAMENTO
+========================================================================== */
+
+.progress-container {
+  width: 80%; /* Larghezza contenitore */
+  max-width: 500px; /* Massima larghezza */
+  margin: 40px auto; /* Spazio sopra/sotto e centratura */
+  background-color: #ddd;
+  border-radius: 20px; /* Angoli arrotondati */
+  overflow: hidden; /* Nasconde eccessi */
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2); /* Ombra interna */
+}
+
+.progress-bar {
+  height: 20px; /* Altezza della barra */
+  width: 0%; /* Parte da 0% */
+  background-color: #3498db;
+}
+
+@keyframes caricaBarra {
+  from {
+    width: 0%;
+  } /* Inizio */
+  to {
+    width: 100%;
+  } /* Fine */
+}
+
+.loading-text {
+  margin-top: 20px;
+  font-size: 1.1rem;
+  color: #555;
+}
+
+.progress-text {
+  margin-top: 5px;
+  font-weight: bold;
+  text-align: right;
+}
+
+.progress-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 80%;
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+#contatore-msg {
+  margin-top: 10px;
+  font-weight: bold;
+  text-align: center;
+}
+
+/* ==========================================================================
+   GRAFICO E MODALE
+========================================================================== */
+
+.grafico-box {
+  margin: 60px auto; /* Margine verticale e centratura */
+  padding: 40px; /* Spazio interno */
+  max-width: 800px; /* Larghezza massima */
+  background-color: #fff;
+  border-radius: 12px; /* Angoli arrotondati */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Ombra */
+  text-align: center;
+  margin-top: 3px;
+}
+
+.grafico-box h2 {
+  font-size: 1.8rem;
+  color: #2c3e50;
+  margin-bottom: 20px;
+}
+
+#grafico-placeholder {
+  min-height: 300px; /* Altezza minima */
+  display: flex; /* Flexbox */
+  justify-content: center; /* Centra orizzontalmente */
+  align-items: center; /* Centra verticalmente */
+  border: 2px dashed #bbb; /* Bordo tratteggiato */
+  border-radius: 8px; /* Angoli arrotondati */
+  background-color: #f9f9f9;
+  color: #999;
+  font-size: 1.1rem; /* Testo */
+}
+
+.grafico-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin: 40px auto;
+  /* padding: 0 20px; */
+  max-width: var(--contenitore-analisi, 850px);
+}
+
+.grafico-buttons button,
+.grafico-buttons .btn-nuova-analisi {
+  padding: 12px 24px; /* Spaziatura */
+  font-size: 16px;
+  background-color: #3498db;
+  color: white;
+  border: none; /* Nessun bordo */
+  border-radius: 8px; /* Angoli arrotondati */
+  text-decoration: none; /* Nessuna sottolineatura */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Ombra */
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  cursor: pointer; /* Cursore */
+}
+
+.grafico-buttons button:hover,
+.grafico-buttons .btn-nuova-analisi:hover {
+  background-color: #2980b9; /* Cambia colore al passaggio */
+  transform: translateY(-2px); /* Solleva il bottone */
+}
+
+body.dark-theme #grafico-title {
+  color: #ffffff;
+}
+
+/* ==========================================================================
+  PULSANTE TEMA SCURO
+========================================================================== */
+
+body.dark-theme {
+  background-color: #1e1e1e;
+  color: #e0e0e0;
+}
+
+body.dark-theme h1,
+body.dark-theme p,
+body.dark-theme .breadcrumb,
+body.dark-theme #risultato {
+  color: #e0e0e0;
+}
+
+body.dark-theme .upload-area {
+  background-color: #2c2c2c;
+  border-color: #666;
+  color: #ccc;
+}
+
+body.dark-theme .grafico-box {
+  background-color: #2c2c2c;
+  color: #ccc;
+}
+
+body.dark-theme .breadcrumb span.disabled {
+  color: #777;
+}
+
+body.dark-theme #details-wrapper,
+body.dark-theme #highlighted-text-wrapper,
+body.dark-theme #toxicity-level {
+  background-color: gray;
+}
+
+/* Pulsante cambio tema (in alto a destra) */
+#toggle-theme {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background-color: #f1c40f;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  background-image: url("data:image/svg+xml,%3Csvg fill='%23000' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12 2a1 1 0 0 1 1 1v1a1 1 0 1 1-2 0V3a1 1 0 0 1 1-1zm6.364 3.636a1 1 0 0 1 1.414 1.414L18.414 8.414a1 1 0 1 1-1.414-1.414l1.364-1.364zM21 11a1 1 0 1 1 0 2h-1a1 1 0 1 1 0-2h1zM5.636 5.636A1 1 0 1 1 7.05 7.05L5.686 8.414A1 1 0 1 1 4.272 7L5.636 5.636zM4 11a1 1 0 1 1 0 2H3a1 1 0 1 1 0-2h1zm1.636 7.364a1 1 0 1 1-1.414-1.414l1.364-1.364a1 1 0 0 1 1.414 1.414L5.636 18.364zM11 20a1 1 0 1 1 2 0v1a1 1 0 1 1-2 0v-1zm7.364-1.636a1 1 0 1 1-1.414 1.414l-1.364-1.364a1 1 0 1 1 1.414-1.414l1.364 1.364zM12 6a6 6 0 1 1 0 12A6 6 0 0 1 12 6z'/%3E%3C/svg%3E");
+  background-size: 60%;
+  background-repeat: no-repeat;
+  background-position: center;
+  transition: background-color 0.3s ease, background-image 0.3s ease;
+}
+
+/* Modalità scura: cambia icona e colore */
+body.dark-theme #toggle-theme {
+  background-color: #2c3e50;
+  background-image: url("data:image/svg+xml,%3Csvg fill='%23fff' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M21.75 15.25A9.75 9.75 0 0 1 8.75 2.25 10 10 0 1 0 21.75 15.25z'/%3E%3C/svg%3E");
+}
+
+/* ==========================================================================
+  PULSANTE CAMBIO LINGUA
+========================================================================== */
+
+#toggle-language {
+  position: fixed;
+  top: 20px;
+  right: 80px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background-color: #2ecc71;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  color: white;
+  font-weight: bold;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ==========================================================================
+  TOSSICITA'
+========================================================================== */
+
+.no-toxicity {
+  color: #ffcccc;
+}
+.low-toxicity {
+  color: #ff9999;
+}
+.medium-toxicity {
+  color: #ff4d4d;
+}
+.high-toxicity {
+  color: #cc0000;
+}
+
+.no-toxicity-row {
+  background-color: #ffe6e6;
+}
+.low-toxicity-row {
+  background-color: #ffb3b3;
+}
+.medium-toxicity-row {
+  background-color: #ff6666;
+}
+.high-toxicity-row {
+  background-color: #b30000;
+}
+
+#highlighted-text,
+#results-table {
+  max-width: 700px;
+  margin: 0 auto;
+  text-align: left;
+  line-height: 1.8;
+  font-size: 1.1rem;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+#toxicity-level {
+  background-color: white;
+}
+
+/* Tema scuro: migliora contrasto per testi tossicità */
+body.dark-theme .no-toxicity {
+  color: #ffcccc;
+}
+body.dark-theme .low-toxicity {
+  color: #ff9999;
+}
+body.dark-theme .medium-toxicity {
+  color: #ff4d4d;
+}
+body.dark-theme .high-toxicity {
+  color: #cc0000;
+}
+
+body.dark-theme .no-toxicity-row {
+  background-color: #663333;
+}
+body.dark-theme .low-toxicity-row {
+  background-color: #802929;
+}
+body.dark-theme .medium-toxicity-row {
+  background-color: #991f1f;
+}
+body.dark-theme .high-toxicity-row {
+  background-color: #4d0000;
+}
+
+body.dark-theme table th,
+body.dark-theme table td {
+  color: #fff; /* testo bianco nelle celle */
+}
+
+.theme-dropdown {
+  position: fixed;
+  top: 70px;
+  right: 20px;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  width: 180px;
+  text-align: left;
+}
+
+.theme-dropdown strong {
+  display: block;
+  margin-bottom: 6px;
+  color: #333;
+  font-size: 14px;
+}
+
+.theme-dropdown hr {
+  margin: 10px 0;
+}
+
+.theme-dropdown div {
+  padding: 6px 10px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.theme-dropdown div:hover {
+  background-color: #f0f0f0;
+}
+
+.theme-dropdown.hidden {
+  display: none;
+}
+
+/* === FILTRI DALTONISMO === */
+
+body.dalton-protanopia .no-toxicity {
+  color: #ffd6d6;
+}
+body.dalton-protanopia .low-toxicity {
+  color: #ffaaaa;
+}
+body.dalton-protanopia .medium-toxicity {
+  color: #ff5c5c;
+}
+body.dalton-protanopia .high-toxicity {
+  color: #990000;
+}
+
+body.dalton-deuteranopia .no-toxicity {
+  color: #ffe0e0;
+}
+body.dalton-deuteranopia .low-toxicity {
+  color: #ffb3b3;
+}
+body.dalton-deuteranopia .medium-toxicity {
+  color: #ff6666;
+}
+body.dalton-deuteranopia .high-toxicity {
+  color: #a60000;
+}
+
+body.dalton-tritanopia .no-toxicity {
+  color: #f9caca;
+}
+body.dalton-tritanopia .low-toxicity {
+  color: #f99494;
+}
+body.dalton-tritanopia .medium-toxicity {
+  color: #f24d4d;
+}
+body.dalton-tritanopia .high-toxicity {
+  color: #8b0000;
+}
+
+body.dalton-acromatopsia .no-toxicity {
+  color: #bbbbbb;
+}
+body.dalton-acromatopsia .low-toxicity {
+  color: #999999;
+}
+body.dalton-acromatopsia .medium-toxicity {
+  color: #777777;
+}
+body.dalton-acromatopsia .high-toxicity {
+  color: #444444;
+}
+
+/* FILTRI DALTONISMO - righe della tabella */
+
+body.dalton-protanopia .no-toxicity-row {
+  background-color: #ffeaea;
+}
+body.dalton-protanopia .low-toxicity-row {
+  background-color: #ffc2c2;
+}
+body.dalton-protanopia .medium-toxicity-row {
+  background-color: #ff8f8f;
+}
+body.dalton-protanopia .high-toxicity-row {
+  background-color: #b32424;
+}
+
+body.dalton-deuteranopia .no-toxicity-row {
+  background-color: #fff0f0;
+}
+body.dalton-deuteranopia .low-toxicity-row {
+  background-color: #ffc6c6;
+}
+body.dalton-deuteranopia .medium-toxicity-row {
+  background-color: #ff9999;
+}
+body.dalton-deuteranopia .high-toxicity-row {
+  background-color: #bf3030;
+}
+
+body.dalton-tritanopia .no-toxicity-row {
+  background-color: #fcdcdc;
+}
+body.dalton-tritanopia .low-toxicity-row {
+  background-color: #fda5a5;
+}
+body.dalton-tritanopia .medium-toxicity-row {
+  background-color: #f76d6d;
+}
+body.dalton-tritanopia .high-toxicity-row {
+  background-color: #a12626;
+}
+
+body.dalton-acromatopsia .no-toxicity-row {
+  background-color: #e6e6e6;
+}
+body.dalton-acromatopsia .low-toxicity-row {
+  background-color: #cccccc;
+}
+body.dalton-acromatopsia .medium-toxicity-row {
+  background-color: #aaaaaa;
+}
+body.dalton-acromatopsia .high-toxicity-row {
+  background-color: #888888;
+}
+
+/* ==========================================================================
+   INPUT MANUALE E UPLOAD - LAYOUT AFFIANCATO
+========================================================================== */
+
+.input-upload-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+  margin-top: 40px;
+  align-items: center;
+}
+
+.manual-box {
+  width: 80%;
+  max-width: 500px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform: translateX(300px); /* Sposta verso il centro */
+  margin-top: 60px; /* Sposta più in basso */
+}
+
+.manual-box textarea {
+  width: 100%;
+  padding: 16px;
+  font-size: 1rem;
+  border: 3px dashed #7f8c8d;
+  border-radius: 12px;
+  background-color: #f9f9f9;
+  color: #555;
+  resize: vertical;
+  box-sizing: border-box;
+  height: 210px;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Modalità scura per textarea */
+body.dark-theme .manual-box textarea {
+  background-color: #2c2c2c;
+  border-color: #666;
+  color: #ccc;
+}
+
+.manual-box,
+.upload-area.show {
+  width: 400px;
+  max-width: 400px;
+  min-width: 320px;
+  box-sizing: border-box;
+}
+
+.manual-box .btn-avanti {
+  margin-top: 20px;
+  align-self: center;
+}
+
+.month-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.month-initial {
+  width: 20px;
+  font-weight: bold;
+  text-align: center;
+  margin-right: 6px;
+}
+
+.mini-chart {
+  width: 50px;
+  height: 40px;
+}
+
+@media (max-width: 900px) {
+  .input-upload-wrapper {
+    flex-direction: column; /* disposizione verticale */
+    align-items: center;
+  }
+
+  .manual-box,
+  .upload-area.show {
+    width: 90% !important; /* occupano quasi tutta la larghezza disponibile */
+    max-width: 500px; /* massimo comunque */
+    transform: none !important; /* rimuove il translateX che rompe il layout */
+    margin-top: 20px;
+  }
+}
+
+/* ==========================================================================
+   POPUP CHECKBOX
+========================================================================== */
+
+.popup.hidden {
+  display: none;
+}
+
+.popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  padding: 20px;
+  z-index: 1000;
+  border: 2px solid #ccc;
+  box-shadow: 0px 0px 10px #aaa;
+}
+
+.popup-content {
+  max-width: 300px;
+  padding: 5px 20px 16px 20px; /* top, right, bottom, left */
+}
+
+.popup-content label {
+  display: block;
+  margin-top: 4px;
+  margin-bottom: -15px; /* ↓ riduce lo spazio tra le checkbox */
+}
+
+.popup-content button {
+  margin-top: 20px; /* o 16px, o quanto vuoi */
+}
+
+.popup-close {
+  float: right;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 23px;
+}
+
+body.dark-theme .popup {
+  background: #2c2c2c;
+  color: #f0f0f0;
+  border: 2px solid #555;
+}
+
+body.dark-theme .popup-content label {
+  color: #f0f0f0;
+}
+
+body.dark-theme .popup-close {
+  color: #f0f0f0;
+}
+
+body.dark-theme #salva-opzioni {
+  background-color: #444;
+  color: #fff;
+  border: 1px solid #888;
+}
+
+/* Tema scuro per il pulsante "Opzioni avanzate" */
+body.dark-theme #btn-opzioni {
+  background-color: #333;
+  color: #f0f0f0;
+  border: 1px solid #777;
+}
+
+body.dark-theme #btn-opzioni:hover {
+  background-color: #444;
+  border-color: #999;
+}
+
+/* Evidenziazione della voce nel menu e tendina per colore e accessibilità */
+.theme-option.active,
+.dalton-option.active {
+  font-weight: bold;
+  text-decoration: underline;
+  cursor: default;
+  background-color: rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+}
+
+/* Tema scuro: miglior leggibilità menu a tendina */
+body.dark-theme .theme-dropdown {
+  background-color: #1f1f1f;
+  color: #f0f0f0;
+  border: 1px solid #555;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.1);
+}
+
+body.dark-theme .theme-dropdown strong {
+  color: #ffffff;
+}
+
+body.dark-theme .theme-dropdown div {
+  color: #e0e0e0;
+}
+
+body.dark-theme .theme-dropdown .active {
+  background-color: #333;
+  color: #ffffff;
+}
+
+/* unico contenitore nella home */
+
+.input-area {
+  max-width: 700px;
+  margin: 30px auto;
+  padding: 20px;
+  border: 2px dashed #ccc;
+  border-radius: 8px;
+  text-align: center;
+  transition: border-color 0.3s, background-color 0.3s;
+}
+
+.input-area.dragover {
+  border-color: #007bff;
+  background-color: rgba(0, 123, 255, 0.05);
+}
+
+.input-area textarea {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 16px;
+  border: 1px solid #aaa;
+  border-radius: 4px;
+  resize: vertical;
+  font-size: 14px;
+  box-sizing: border-box;
+  background-color: #f9f9f9;
+  color: #333;
+}
+
+.input-area input[type="file"] {
+  display: none;
+}
+
+.input-area label.custom-file-button {
+  display: inline-block;
+  padding: 8px 16px;
+  background-color: #007bff;
+  color: #fff;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.hidden {
+  display: none;
+}
+
+.button-area {
+  display: flex;
+  justify-content: center; /* Centra orizzontalmente */
+  align-items: center;
+  gap: 20px; /* Spazio tra i due pulsanti */
+  margin-top: 20px;
+  flex-wrap: wrap; /* Evita overflow su schermi piccoli */
+}
+
+body.dark-theme .input-area textarea {
+  background-color: #2c2c2c;
+  color: #e0e0e0;
+  border-color: #666;
+}
+
+.input-area label.btn-avanti {
+  margin-top: 4px;
+}
+
+#input-area .btn-avanti {
+  display: inline-block;
+  width: 160px;
+  height: 44px;
+  line-height: 44px; /* testo verticalmente centrato per <label> */
+  padding: 0;
+  font-size: 15px;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  text-align: center;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  margin: 8px;
+  vertical-align: middle;
+}
+
+#input-area .btn-avanti:hover {
+  background-color: #2980b9;
+  transform: translateY(-2px);
+}
+
+#input-area button.btn-avanti {
+  line-height: normal; /* necessario per button */
+  display: inline-block;
+  width: 140px;
+  height: 44px;
+  padding: 0;
+}
+
+.details-box {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 16px;
+  max-width: 700px;
+  margin: 20px auto;
+  background-color: #fff;
+  font-size: 1.1rem;
+  line-height: 1.7;
+}
+
+/* Tema scuro */
+body.dark-theme .details-box {
+  background-color: #2c2c2c;
+  border-color: #555;
+  color: #e0e0e0;
+}
+
+/* ========================================================================== 
+   FLEX CONTAINER DEFINITIONS 
+========================================================================== */
+
+#highlighted-text-wrapper,
+#details-wrapper {
+  background-color: white;
+  flex: 1;
+  min-width: 300px; /* Larghezza minima */
+}
+
+/* ========================================================================== 
+   BOX STYLING
+========================================================================== */
+
+.details-box p {
+  margin-bottom: 12px;
+}
+
+.details-box p:last-child {
+  margin-bottom: 0; /* Evita il margine extra dopo l'ultimo paragrafo */
+}
+
+/* --- CONTENITORI RISULTATI --- */
+.results-container {
+  display: flex; /* Rende gli elementi figli flessibili */
+  gap: 20px; /* Spazio tra i due blocchi */
+  box-sizing: border-box; /* Include padding e border nella larghezza */
+  flex-wrap: wrap; /* Permette ai blocchi di andare a capo su schermi piccoli */
+  justify-content: center; /* Centra il container */
+  max-width: var(
+    --contenitore-analisi
+  ); /* Utilizza la variabile per la larghezza massima, se definita altrove */
+  margin: 20px auto; /* Centra il contenitore orizzontalmente */
+}
+
+.results-block {
+  /* flex: 1;  Permette ai blocchi di crescere e restringersi */
+  min-width: 300px; /* Larghezza minima per evitare che si stringano troppo */
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  overflow-x: auto;
+  box-sizing: border-box;
+  border: 1px solid #ccc;
+  padding: 10px;
+  border-radius: 6px;
+}
+
+#highlighted-text-wrapper {
+  flex: 7; /* Occupa 7 parti dello spazio disponibile */
+}
+
+#details-wrapper {
+  flex: 3; /* Occupa 3 parti dello spazio disponibile */
+}
+
+/* Regole per la responsività */
+@media (max-width: 768px) {
+  .results-container {
+    flex-direction: column; /* Impila i blocchi verticalmente su schermi piccoli */
+    align-items: center; /* Centra i blocchi impilati */
+  }
+
+  #highlighted-text-wrapper,
+  #details-wrapper {
+    width: 90%; /* Occupano quasi tutta la larghezza su schermi piccoli */
+    max-width: 600px; /* Limita la larghezza massima anche in colonna */
+  }
+}
+
+#details-wrapper {
+  text-align: left;
+}
+
+/* ==========================================================================
+   STILE PER I RIQUADRI DEI RISULTATI
+========================================================================== */
+
+/* Stile base comune per entrambi i riquadri */
+.highlight-box,
+.details-box {
+  /* flex-grow: 1; */
+  font-size: 1.1rem;
+  line-height: 1.6;
+  text-align: left;
+}
+
+/* Il riquadro di sinistra NON ha un colore di sfondo, così risulta trasparente */
+.highlight-box {
+  max-height: 400px; /* Manteniamo l'altezza massima con scroll */
+  overflow-y: auto;
+}
+
+/* Applichiamo il colore di sfondo SOLO al riquadro dei dettagli (destra) */
+.details-box {
+  background-color: #fff;
+}
+
+/* --- REGOLE PER IL TEMA SCURO --- */
+
+body.dark-theme .highlight-box {
+  color: #e0e0e0;
+  /* Nessun colore di sfondo qui */
+}
+
+body.dark-theme .details-box {
+  background-color: #2c2c2c; /* Sfondo scuro SOLO per i dettagli */
+  color: #e0e0e0;
+}
+
+/*
+ * Stile per allineare i pulsanti sotto la tabella dei risultati
+ */
+.button-container-tabella {
+  max-width: 600px; /* La stessa larghezza massima della tabella */
+  margin: 40px auto; /* Centra il contenitore e dà spazio sopra */
+  padding: 0; /* Rimuove il padding laterale se presente */
+}
+
+/*
+ * Aggiunge spaziatura verticale nel box dei dettagli
+ */
+#details-wrapper p {
+  margin-bottom: 12px; /* Aggiunge uno spazio di 12px sotto ogni paragrafo */
+}
+
+/* bottone ozpioni avanzate nella schermata home */
+#btn-opzioni.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  /* pointer-events: none; */
+}
+
+/* bottone settimane nel grafico settimanale */
+.disabled-btn {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* regole per bottone esporta nelle chat con gestione del tema scuro*/
+.export-menu-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.export-menu {
+  position: absolute;
+  top: 48px;
+  left: 0;
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  width: 180px;
+  text-align: left;
+}
+
+.export-menu div {
+  padding: 10px;
+  cursor: pointer;
+}
+
+.export-menu div:hover {
+  background-color: #f0f0f0;
+}
+
+.export-menu.hidden {
+  display: none;
+}
+
+body.dark-theme .export-menu {
+  background-color: #2c2c2c;
+  border: 1px solid #555;
+  color: #f0f0f0;
+}
+
+body.dark-theme .export-menu div {
+  color: #f0f0f0;
+}
+
+body.dark-theme .export-menu div:hover {
+  background-color: #3a3a3a;
+}

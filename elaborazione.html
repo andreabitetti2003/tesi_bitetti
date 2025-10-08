@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Elaborazione</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+
+  <body>
+    <script>
+      (function () {
+        const tema = localStorage.getItem("tema");
+        if (tema === "scuro") {
+          document.body.classList.add("dark-theme");
+        }
+      })();
+    </script>
+    <button id="toggle-theme" aria-label="Cambia tema"></button>
+    <div id="theme-menu" class="theme-dropdown hidden">
+      <strong>Tema</strong>
+      <div class="theme-option" data-theme="chiaro">Chiaro</div>
+      <div class="theme-option" data-theme="scuro">Scuro</div>
+      <hr />
+      <strong>Accessibilità</strong>
+      <div class="dalton-option" data-dalton="nessuno">Nessun filtro</div>
+      <div class="dalton-option" data-dalton="protanopia">Protanopia</div>
+      <div class="dalton-option" data-dalton="deuteranopia">Deuteranopia</div>
+      <div class="dalton-option" data-dalton="tritanopia">Tritanopia</div>
+      <div class="dalton-option" data-dalton="acromatopsia">Acromatopsia</div>
+    </div>
+
+    <button id="toggle-language" aria-label="Cambia lingua">IT</button>
+
+    <h1 id="elab-title">Elaborazione in corso...</h1>
+
+    <!-- barra di navigazione -->
+    <nav class="breadcrumb">
+      <a href="index.html" id="breadcrumb-home">Home</a> &gt;
+      <span id="breadcrumb-processing" class="current">Elaborazione</span> &gt;
+      <span id="breadcrumb-visual" class="disabled">Visualizzazione</span>
+    </nav>
+
+    <p id="elab-desc">
+      Stiamo analizzando il contenuto. Attendere qualche istante.
+    </p>
+
+    <div class="progress-wrapper">
+      <div class="progress-container">
+        <div class="progress-bar" id="barra"></div>
+      </div>
+      <div class="progress-text"><span id="percentualeTesto">0%</span></div>
+    </div>
+
+    <div id="contatore-msg">&nbsp;</div>
+
+    <p
+      id="messaggioChatAnalizzate"
+      style="margin-top: 10px; font-size: 1rem; color: #555"
+    ></p>
+
+    <script>
+      async function processaConBarra(contenutoOriginale, tipoOriginale) {
+        const params = new URLSearchParams(window.location.search);
+        const fileIndex = params.get("file") || "0";
+        await new Promise((resolve) => setTimeout(resolve, 1000)); // Ridotto leggermente il delay
+        const testo = contenutoOriginale;
+
+        const flags = (localStorage.getItem("chatFlags") || "").split(" ");
+        const usaAPI = flags.includes("-h");
+        const mostraContenuto = flags.includes("-c");
+
+        if (!testo) {
+          alert("Errore: nessun contenuto da analizzare.");
+          window.location.href = "index.html"; // Torna alla home se non c'è contenuto
+          return;
+        }
+
+        const righe = testo.split("\n");
+        const totale = righe.length;
+        const barra = document.querySelector(".progress-bar");
+        const percentuale = document.getElementById("percentualeTesto");
+
+        // Elaborazione per tipo testo
+        if (tipoOriginale === "testo") {
+          // Usiamo una regex per dividere il testo in frasi
+          const sentences = testo.match(/[^.!?]+[.!?]?\s*/g) || [];
+
+          const results = [];
+          const totalSentences = sentences.length;
+          const lingua = localStorage.getItem("lingua") || "it";
+          const t = {
+            it: (x, y) => `Analizzate ${x} di ${y} frasi`,
+            en: (x, y) => `Analyzed ${x} of ${y} sentences`,
+          };
+
+          for (let i = 0; i < totalSentences; i++) {
+            const sentence = sentences[i];
+            if (!sentence.trim()) continue; // Salta frasi vuote
+
+            const apiResult = await ottieniTossicita(sentence);
+            const toxic = apiResult?.[0]?.find((e) => e.label === "toxic");
+            const toxicScore = toxic ? +toxic.score.toFixed(4) : 0;
+            const otherScores =
+              apiResult?.[0]
+                ?.map((e) => `${e.label}: ${e.score.toFixed(4)}`)
+                .join("<br>") || "N/D";
+
+            results.push({
+              text: sentence,
+              toxicScore,
+              otherScores,
+            });
+
+            const progresso = Math.floor(((i + 1) / totalSentences) * 100);
+            if (barra) barra.style.width = progresso + "%";
+            if (percentuale) percentuale.textContent = `${progresso}%`;
+            document.getElementById("contatore-msg").textContent = t[lingua](
+              i + 1,
+              totalSentences
+            );
+          }
+
+          // Otteniamo l'indice del file dalla URL per creare una chiave univoca
+          const params = new URLSearchParams(window.location.search);
+          const fileIndex = params.get("file") || "0";
+
+          // Salviamo il risultato in una chiave univoca
+          localStorage.setItem(
+            `textResult_${fileIndex}`,
+            JSON.stringify(results)
+          );
+
+          // Reindirizziamo passando l'indice del file
+          window.location.href = `visualizzazione_testo.html?file=${fileIndex}`;
+          return;
+        }
+
+        // Elaborazione per tipo chat
+        if (tipoOriginale === "chat") {
+          const allFiles = JSON.parse(
+            localStorage.getItem("multiMixedFiles") || "[]"
+          );
+          const currentFile = allFiles[fileIndex];
+          const groupName = currentFile
+            ? currentFile.name
+            : `chat_${fileIndex}`;
+
+          const regex =
+            /\[(\d{1,2}\/\d{1,2}\/\d{2,4}), (\d{2}:\d{2}:\d{2})\] (.+?): (.+)/;
+          const nomiAnonimi = {};
+          const listaNomi = [
+            "Alice",
+            "Bob",
+            "Carlo",
+            "Diana",
+            "Eve",
+            "Frank",
+            "Giulia",
+            "Marco",
+          ];
+          let index = 0;
+          const links = [];
+          const partecipanti = new Set();
+          function anonimizza(nome) {
+            if (!nomiAnonimi[nome])
+              nomiAnonimi[nome] = listaNomi[index++ % listaNomi.length] || nome;
+            return nomiAnonimi[nome];
+          }
+
+          function parseDataOra(data, ora) {
+            const [gg, mm, aa] = data.split("/").map(Number);
+            const [hh, min, ss] = ora.split(":").map(Number);
+            return new Date(
+              2000 + (aa < 100 ? aa : aa - 2000),
+              mm - 1,
+              gg,
+              hh,
+              min,
+              ss
+            );
+          }
+
+          const lingua = localStorage.getItem("lingua") || "it";
+          const t = {
+            it: (x, y) => `Analizzati ${x} di ${y} messaggi`,
+            en: (x, y) => `Analyzed ${x} of ${y} messages`,
+          };
+
+          for (let i = 0; i < totale; i++) {
+            const riga = righe[i];
+            const match = riga.match(regex);
+            if (!match) continue;
+            const [_, data, ora, mittente, messaggio] = match;
+            const datetime = parseDataOra(data, ora);
+            const anonMittente = anonimizza(mittente.trim());
+            partecipanti.add(anonMittente);
+            const destinatari = [...partecipanti].filter(
+              (p) => p !== anonMittente
+            );
+            const tossicita = usaAPI
+              ? (await ottieniTossicita(messaggio))?.[0]?.find(
+                  (e) => e.label === "toxic"
+                )?.score ?? 0
+              : 0;
+            const numeroParole = messaggio.trim().split(/\s+/).length;
+            destinatari.forEach((dest) => {
+              links.push({
+                source: anonMittente,
+                target: dest,
+                timeSlot: datetime.toISOString(),
+                tossicita,
+                message: mostraContenuto ? messaggio : "",
+                number_of_words: numeroParole,
+                group: groupName,
+              });
+            });
+            const progresso = Math.floor(((i + 1) / totale) * 100);
+            if (barra) barra.style.width = progresso + "%";
+            if (percentuale) percentuale.textContent = progresso + "%";
+            document.getElementById("contatore-msg").textContent = t[lingua](
+              i + 1,
+              totale
+            );
+          }
+
+          // Salva il risultato di questa chat in una chiave temporanea e unica
+          localStorage.setItem(
+            `chatResult_${fileIndex}`,
+            JSON.stringify(links)
+          );
+
+          // Controlla se siamo in modalità "misto"
+          const totalMixedChats = parseInt(
+            localStorage.getItem("totalMixedChats") || 0
+          );
+
+          if (totalMixedChats > 0) {
+            // Incrementa il contatore delle chat processate
+            let processedCount =
+              parseInt(localStorage.getItem("processedMixedChats") || 0) + 1;
+            localStorage.setItem("processedMixedChats", processedCount);
+
+            // Se questa è l'ULTIMA chat ad aver finito...
+            if (processedCount >= totalMixedChats) {
+              let finalLinks = [];
+              const allFiles = JSON.parse(
+                localStorage.getItem("multiMixedFiles") || "[]"
+              );
+
+              // Legge tutti i risultati parziali
+              allFiles.forEach((_, i) => {
+                const partialResult = localStorage.getItem(`chatResult_${i}`);
+                if (partialResult) {
+                  finalLinks.push(...JSON.parse(partialResult));
+                  localStorage.removeItem(`chatResult_${i}`);
+                }
+              });
+
+              // Salva l'array finale aggregato. Questo attiverà l'event listener nella finestra principale.
+              localStorage.setItem("chatLinks", JSON.stringify(finalLinks));
+
+              // Pulisce i contatori
+              localStorage.removeItem("totalMixedChats");
+              localStorage.removeItem("processedMixedChats");
+
+              // Se l'ultima a finire è la finestra principale, si reindirizza.
+              // Altrimenti, si chiude, perché la principale si reindirizzerà da sola.
+              if (fileIndex === "0") {
+                window.location.href = "visualizzazione.html";
+              } else {
+                window.close();
+              }
+            } else {
+              // Se NON è l'ultima chat...
+              if (fileIndex === "0") {
+                // ...e siamo nella finestra principale, mettiamola in attesa.
+                document.getElementById("elab-title").textContent =
+                  "Elaborazione di questo file completata";
+                document.getElementById("elab-desc").textContent =
+                  "In attesa che le altre finestre terminino il loro lavoro. Questa finestra si aggiornerà al completamento.";
+
+                // Aggiungiamo l'event listener per intercettare la fine del processo
+                window.addEventListener("storage", function (event) {
+                  if (
+                    event.key === "chatLinks" &&
+                    event.newValue &&
+                    event.newValue !== "[]"
+                  ) {
+                    window.location.href = "visualizzazione.html";
+                  }
+                });
+              } else {
+                // ...altrimenti, se è una finestra secondaria, può chiudersi.
+                window.close();
+              }
+            }
+          } else {
+            // Comportamento per i casi non misti (es. solo chat)
+            localStorage.setItem("chatLinks", JSON.stringify(links));
+            window.location.href = "visualizzazione.html";
+          }
+          return;
+        }
+
+        // Funzione di utilità per l'API
+        async function ottieniTossicita(testo) {
+          if (!testo.trim()) return [];
+          const url =
+            "https://api-inference.huggingface.co/models/unitary/toxic-bert";
+          const token = "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"; // Usa il tuo token
+          try {
+            const res = await fetch(url, {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ inputs: testo }),
+            });
+            if (!res.ok) return [];
+            return await res.json();
+          } catch {
+            return [];
+          }
+        }
+      }
+
+      document.addEventListener("DOMContentLoaded", async () => {
+        const params = new URLSearchParams(window.location.search);
+        const fileIndex = parseInt(params.get("file"));
+
+        const mixedFiles = JSON.parse(
+          localStorage.getItem("multiMixedFiles") || "[]"
+        );
+        const textFiles = JSON.parse(
+          localStorage.getItem("multiTextFiles") || "[]"
+        );
+        const chatFiles = JSON.parse(
+          localStorage.getItem("multiChatFiles") || "[]"
+        );
+
+        let file = null;
+        let tipo = null;
+
+        if (!isNaN(fileIndex)) {
+          if (mixedFiles[fileIndex]) {
+            file = mixedFiles[fileIndex];
+            tipo = /\[\d{1,2}\/\d{1,2}\/\d{2,4}, \d{2}:\d{2}:\d{2}\] .+/.test(
+              file.contenuto
+            )
+              ? "chat"
+              : "testo";
+          } else if (textFiles[fileIndex]) {
+            file = textFiles[fileIndex];
+            tipo = "testo";
+          } else if (chatFiles[fileIndex]) {
+            file = chatFiles[fileIndex];
+            tipo = "chat";
+          }
+
+          if (file && tipo) {
+            localStorage.setItem("tipoDocumento", tipo);
+          }
+        }
+
+        if (file && typeof file.contenuto === "string" && tipo) {
+          const contenuto = file.contenuto;
+          if (!contenuto.trim()) {
+            console.warn("File contenuto vuoto per fileIndex", fileIndex);
+          }
+
+          processaConBarra(contenuto, tipo);
+          return;
+        }
+
+        // multiChatMode attivo: elaborazione batch
+        const isMulti = localStorage.getItem("multiChatMode") === "true";
+        if (isMulti) {
+          await elaboraTutteLeChat();
+          localStorage.setItem("tipoDocumento", "chat");
+          localStorage.removeItem("multiChatMode");
+          localStorage.removeItem("multiChatFiles");
+          window.location.href = "visualizzazione.html";
+          return;
+        }
+
+        localStorage.removeItem("chatContent");
+        localStorage.removeItem("chatBackup");
+        localStorage.removeItem("tipoDocumento");
+
+        // Caso fallback (singolo file caricato)
+        const fallback =
+          localStorage.getItem("chatContent") ||
+          localStorage.getItem("chatBackup");
+        tipo = localStorage.getItem("tipoDocumento");
+        if (fallback && tipo) {
+          processaConBarra(fallback, tipo);
+          return;
+        }
+
+        alert("Errore: contenuto non trovato");
+      });
+
+      // Gestione lingua
+      const btnLingua = document.getElementById("toggle-language");
+      const linguaCorrente = localStorage.getItem("lingua") || "it";
+      btnLingua.textContent = linguaCorrente.toUpperCase();
+      impostaLingua(linguaCorrente);
+
+      btnLingua.addEventListener("click", () => {
+        const attuale = localStorage.getItem("lingua") || "it";
+        const nuovaLingua = attuale === "it" ? "en" : "it";
+        localStorage.setItem("lingua", nuovaLingua);
+
+        const chat = localStorage.getItem("chatContent");
+        if (chat) localStorage.setItem("chatBackup", chat); // backup della chat
+
+        location.reload(); // ricarica pagina
+      });
+
+      function impostaLingua(lang) {
+        const testi = {
+          it: {
+            titolo: "Elaborazione in corso...",
+            descrizione:
+              "Stiamo analizzando il contenuto. Attendere qualche istante.",
+            home: "Home",
+            elaborazione: "Elaborazione",
+            visualizzazione: "Visualizzazione",
+            analizzati: (x, y) => `Analizzati ${x} di ${y} messaggi`,
+          },
+          en: {
+            titolo: "Processing...",
+            descrizione: "We are analyzing the content. Please wait a moment.",
+            home: "Home",
+            elaborazione: "Processing",
+            visualizzazione: "Visualization",
+            analizzati: (x, y) => `Analyzed ${x} of ${y} messages`,
+          },
+        };
+
+        const t = testi[lang];
+        document.getElementById("elab-title").textContent = t.titolo;
+        document.getElementById("elab-desc").textContent = t.descrizione;
+
+        // Aggiorna breadcrumb
+        document.getElementById("breadcrumb-home").textContent = t.home;
+        document.getElementById("breadcrumb-processing").textContent =
+          t.elaborazione;
+        document.getElementById("breadcrumb-visual").textContent =
+          t.visualizzazione;
+      }
+
+      // Gestione tema
+      const temaSalvato = localStorage.getItem("tema") || "chiaro";
+      document.body.classList.toggle("dark-theme", temaSalvato === "scuro");
+
+      document.getElementById("toggle-theme").addEventListener("click", (e) => {
+        e.stopPropagation(); // evita che il click si propaghi
+        themeMenu.classList.toggle("hidden");
+      });
+    </script>
+
+    <script src="script.js"></script>
+  </body>
+</html>

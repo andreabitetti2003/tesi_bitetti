@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Visualizzazione Testo</title>
+    <link rel="stylesheet" href="style.css" />
+    <style>
+      .no-toxicity {
+        color: #fee5d9;
+      }
+      .low-toxicity {
+        color: #fcae91;
+      }
+      .medium-toxicity {
+        color: #fb6a4a;
+      }
+      .high-toxicity {
+        color: #cb181d;
+      }
+
+      .toxicity-classes table {
+        margin: 30px auto;
+        border-collapse: collapse;
+      }
+      .toxicity-classes th,
+      .toxicity-classes td {
+        padding: 10px 15px;
+        border: 1px solid #ccc;
+        text-align: left;
+      }
+      .breadcrumb {
+        font-size: 0.9rem;
+        margin: 20px auto;
+        text-align: center;
+      }
+      .breadcrumb a {
+        text-decoration: none;
+        color: #007bff;
+      }
+      .breadcrumb .current {
+        font-weight: bold;
+        color: #000;
+      }
+
+      :root {
+        --contenitore-analisi: 1100px;
+      }
+
+      #highlighted-text {
+        white-space: pre-wrap;
+      }
+    </style>
+  </head>
+
+  <body>
+    <script>
+      (function () {
+        const tema = localStorage.getItem("tema");
+        if (tema === "scuro") {
+          document.body.classList.add("dark-theme");
+        }
+      })();
+    </script>
+    <button id="toggle-theme" aria-label="Cambia tema"></button>
+
+    <div id="theme-menu" class="theme-dropdown hidden">
+      <strong id="label-tema">Tema</strong>
+      <div class="theme-option" data-theme="chiaro" id="opt-chiaro">Chiaro</div>
+      <div class="theme-option" data-theme="scuro" id="opt-scuro">Scuro</div>
+      <hr />
+      <strong id="label-accessibilita">Accessibilità</strong>
+      <div class="dalton-option" data-dalton="nessuno" id="opt-nessuno">
+        Nessun filtro
+      </div>
+      <div class="dalton-option" data-dalton="protanopia" id="opt-protanopia">
+        Protanopia
+      </div>
+      <div
+        class="dalton-option"
+        data-dalton="deuteranopia"
+        id="opt-deuteranopia"
+      >
+        Deuteranopia
+      </div>
+      <div class="dalton-option" data-dalton="tritanopia" id="opt-tritanopia">
+        Tritanopia
+      </div>
+      <div
+        class="dalton-option"
+        data-dalton="acromatopsia"
+        id="opt-acromatopsia"
+      >
+        Acromatopsia
+      </div>
+    </div>
+
+    <button id="toggle-language" aria-label="Cambia lingua">IT</button>
+
+    <h1>Analisi del Testo</h1>
+
+    <nav class="breadcrumb">
+      <a href="index.html" id="breadcrumb-home">Home</a> &gt;
+      <a href="#" id="breadcrumb-processing">Elaborazione</a> &gt;
+      <span id="breadcrumb-visual" class="current">Visualizzazione</span>
+    </nav>
+
+    <div id="loader" class="loader hidden"></div>
+
+    <div class="results-container">
+      <div id="highlighted-text-wrapper" class="results-block hidden">
+        <div id="highlighted-text" class="highlight-box"></div>
+      </div>
+      <div id="details-wrapper" class="results-block hidden">
+        <div id="details-content" class="hidden">
+          Clicca su una frase per vedere i dettagli.
+        </div>
+      </div>
+    </div>
+
+    <div
+      id="checkbox-container"
+      style="margin-top: 20px; text-align: center; display: none"
+    >
+      <label for="filter-toxic-checkbox">
+        <input type="checkbox" id="filter-toxic-checkbox" />
+        <span id="label-filtra">Mostra solo frasi tossiche (≥ 0.25)</span>
+      </label>
+    </div>
+
+    <section class="toxicity-classes table-section">
+      <table id="toxicity-level">
+        <thead>
+          <tr>
+            <th>Classe</th>
+            <th>Range punteggio</th>
+            <th>Descrizione</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td></td>
+            <td></td>
+            <td class="no-toxicity"></td>
+          </tr>
+          <tr>
+            <td></td>
+            <td></td>
+            <td class="low-toxicity"></td>
+          </tr>
+          <tr>
+            <td></td>
+            <td></td>
+            <td class="medium-toxicity"></td>
+          </tr>
+          <tr>
+            <td></td>
+            <td></td>
+            <td class="high-toxicity"></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <div class="grafico-buttons button-container-tabella">
+      <button id="btn-esporta">Esporta</button>
+      <button class="btn-nuova-analisi">Nuova Analisi</button>
+    </div>
+
+    <script>
+      const TRANSLATIONS = {
+        it: {
+          titolo: "Analisi del Testo",
+          breadcrumbProcessing: "Elaborazione",
+          breadcrumbVisual: "Visualizzazione",
+          dettagli: "Clicca su una frase per vedere i dettagli.",
+          headers: ["Classe", "Range punteggio", "Descrizione"],
+          classi: [
+            ["NO TOSSICITÀ", "0.00 – 0.24", "Contenuto non offensivo"],
+            [
+              "BASSA",
+              "0.25 – 0.49",
+              "Contenuto leggermente problematico ma tollerabile",
+            ],
+            ["MEDIA", "0.50 – 0.74", "Contenuto offensivo moderato"],
+            ["ALTA", "0.75 – 1.00", "Contenuto estremamente tossico o dannoso"],
+          ],
+          esporta: "Esporta",
+          nuovaAnalisi: "Nuova Analisi",
+          mostraTossiche: "Mostra solo frasi tossiche (≥ 0.25)",
+        },
+        en: {
+          titolo: "Text Analysis",
+          breadcrumbProcessing: "Processing",
+          breadcrumbVisual: "Visualization",
+          dettagli: "Click on a sentence to view details.",
+          headers: ["Class", "Score range", "Description"],
+          classi: [
+            ["NO TOXICITY", "0.00 – 0.24", "Non-offensive content"],
+            [
+              "LOW",
+              "0.25 – 0.49",
+              "Slightly problematic but tolerable content",
+            ],
+            ["MEDIUM", "0.50 – 0.74", "Moderately offensive content"],
+            ["HIGH", "0.75 – 1.00", "Highly toxic or harmful content"],
+          ],
+          esporta: "Export",
+          nuovaAnalisi: "New Analysis",
+          mostraTossiche: "Show only toxic sentences (≥ 0.25)",
+        },
+      };
+
+      function applyTranslations(lang) {
+        const t = TRANSLATIONS[lang];
+        document.querySelector("h1").textContent = t.titolo;
+        document.getElementById("breadcrumb-processing").textContent =
+          t.breadcrumbProcessing;
+        document.getElementById("breadcrumb-visual").textContent =
+          t.breadcrumbVisual;
+        document.getElementById("details-content").textContent = t.dettagli;
+        document.getElementById("btn-esporta").textContent = t.esporta;
+        document.querySelector(".btn-nuova-analisi").textContent =
+          t.nuovaAnalisi;
+        document.getElementById("label-filtra").textContent = t.mostraTossiche;
+
+        const headers = document.querySelectorAll(".toxicity-classes thead th");
+        headers.forEach((th, i) => {
+          th.textContent = t.headers[i];
+        });
+
+        const rows = document.querySelectorAll(".toxicity-classes tbody tr");
+        rows.forEach((row, i) => {
+          const cells = row.querySelectorAll("td");
+          const valori = t.classi[i];
+          if (cells.length === 3) {
+            cells[0].textContent = valori[0];
+            cells[1].textContent = valori[1];
+            cells[2].textContent = valori[2];
+          }
+        });
+      }
+
+      async function analyzeToxicity(text) {
+        const url =
+          "https://api-inference.huggingface.co/models/unitary/toxic-bert";
+        const token = "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";
+        const response = await fetch(url, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ inputs: text }),
+        });
+        return await response.json();
+      }
+
+      function sentenceTokenize(text) {
+        return text.match(/[^.!?]+[.!?]?\s*/g) || [];
+      }
+
+      function getToxicityClass(score) {
+        if (score < 0.25) return "no";
+        if (score < 0.5) return "low";
+        if (score < 0.75) return "medium";
+        return "high";
+      }
+
+      function encodeHTML(text) {
+        return text
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/\"/g, "&quot;");
+      }
+
+      function createSentenceSpan(sentence, toxicScore, otherScores, lang) {
+        const cls = getToxicityClass(toxicScore);
+        const label =
+          TRANSLATIONS[lang].classi[
+            { no: 0, low: 1, medium: 2, high: 3 }[cls]
+          ][0];
+        const encoded = encodeHTML(sentence);
+        const detail = encodeURIComponent(
+          JSON.stringify({
+            text: sentence,
+            toxicScore: toxicScore.toFixed(4),
+            otherScores,
+            label,
+          })
+        );
+        const span = document.createElement("span");
+        span.className = `${cls}-toxicity clickable-sentence`;
+        span.dataset.detail = detail;
+        span.innerHTML = encoded;
+        return span;
+      }
+
+      function attachClickHandlers() {
+        document.querySelectorAll(".clickable-sentence").forEach((span) => {
+          span.addEventListener("click", () => {
+            const detail = JSON.parse(decodeURIComponent(span.dataset.detail));
+            const el = document.getElementById("details-content");
+            const LABELS = {
+              it: {
+                frase: "Frase",
+                punteggio: "Punteggio tossico",
+                stato: "Stato",
+                altri: "Altri punteggi",
+              },
+              en: {
+                frase: "Sentence",
+                punteggio: "Toxic score",
+                stato: "Status",
+                altri: "Other scores",
+              },
+            };
+
+            const lang = localStorage.getItem("lingua") || "it";
+            const l = LABELS[lang];
+
+            el.innerHTML = `
+  <p><strong>${l.frase}:</strong> ${detail.text}</p>
+  <p><strong>${l.punteggio}:</strong> ${detail.toxicScore}</p>
+  <p><strong>${l.stato}:</strong> ${detail.label}</p>
+  <p><strong>${l.altri}:</strong><br>${detail.otherScores}</p>
+`;
+          });
+        });
+      }
+
+      async function analyzeSentences(sentences, container, lang) {
+        container.innerHTML = "";
+        for (let sentence of sentences) {
+          if (!sentence) continue;
+
+          const result = await analyzeToxicity(sentence);
+          const toxic = result?.[0]?.find((e) => e.label === "toxic");
+          const toxicScore = toxic?.score || 0;
+          const other =
+            result?.[0]
+              ?.map((e) => `${e.label}: ${e.score.toFixed(4)}`)
+              .join("<br>") || "";
+
+          const span = createSentenceSpan(sentence, toxicScore, other, lang);
+          container.appendChild(span);
+        }
+        attachClickHandlers();
+      }
+
+      function evidenziaTemaFiltro() {
+        const tema = localStorage.getItem("tema") || "chiaro";
+        const filtro = localStorage.getItem("daltonismo") || "nessuno";
+
+        document.querySelectorAll(".theme-option").forEach((el) => {
+          el.classList.toggle("active", el.dataset.theme === tema);
+        });
+
+        document.querySelectorAll(".dalton-option").forEach((el) => {
+          el.classList.toggle("active", el.dataset.dalton === filtro);
+        });
+      }
+
+      document.addEventListener("DOMContentLoaded", async () => {
+        const langBtn = document.getElementById("toggle-language");
+        let lang = localStorage.getItem("lingua") || "it";
+        langBtn.textContent = lang.toUpperCase();
+        applyTranslations(lang);
+        aggiornaTestiMenuTema(lang);
+        langBtn.addEventListener("click", () => {
+          lang = lang === "it" ? "en" : "it";
+          localStorage.setItem("lingua", lang);
+          location.reload();
+        });
+
+        const params = new URLSearchParams(window.location.search);
+        const fileIndex = params.get("file");
+
+        if (fileIndex === null) {
+          document.body.innerHTML =
+            "<h1>Errore: Indice del file non specificato.</h1>";
+          return;
+        }
+
+        const resultKey = `textResult_${fileIndex}`;
+        const results = JSON.parse(localStorage.getItem(resultKey) || "[]");
+
+        if (!results.length) {
+          document.body.innerHTML = `<h1>Nessun risultato da visualizzare per il file ${
+            parseInt(fileIndex, 10) + 1
+          }.</h1> <p>Tornare alla <a href='index.html'>Home</a>.</p>`;
+          return;
+        }
+
+        const loader = document.getElementById("loader");
+        const highlighted = document.getElementById("highlighted-text");
+        loader.classList.remove("hidden");
+
+        highlighted.innerHTML = "";
+        results.forEach((r, i) => {
+          const span = createSentenceSpan(
+            r.text,
+            r.toxicScore,
+            r.otherScores,
+            lang
+          );
+          highlighted.appendChild(span);
+        });
+
+        attachClickHandlers();
+
+        document.getElementById("details-wrapper").classList.remove("hidden");
+        document.getElementById("details-content").classList.remove("hidden");
+
+        highlighted.classList.remove("hidden");
+        document
+          .getElementById("highlighted-text-wrapper")
+          .classList.remove("hidden");
+        loader.classList.add("hidden");
+        evidenziaTemaFiltro();
+
+        document.getElementById("checkbox-container").style.display = "block";
+
+        const filterCheckbox = document.getElementById("filter-toxic-checkbox");
+        filterCheckbox.addEventListener("change", () => {
+          const soglia = 0.25;
+
+          const params = new URLSearchParams(window.location.search);
+          const fileIndex = params.get("file") || "0";
+
+          const resultKey = `textResult_${fileIndex}`;
+
+          const results = JSON.parse(localStorage.getItem(resultKey) || "[]");
+          const lang = localStorage.getItem("lingua") || "it";
+          const highlighted = document.getElementById("highlighted-text");
+
+          // Pulisce il contenitore
+          highlighted.innerHTML = "";
+
+          results.forEach((r) => {
+            if (!filterCheckbox.checked || r.toxicScore >= soglia) {
+              const span = createSentenceSpan(
+                r.text,
+                r.toxicScore,
+                r.otherScores,
+                lang
+              );
+              highlighted.appendChild(span);
+            }
+          });
+
+          attachClickHandlers();
+        });
+
+        function aggiornaTestiMenuTema(lang) {
+          document.getElementById("label-tema").textContent =
+            lang === "it" ? "Tema" : "Theme";
+          document.getElementById("label-accessibilita").textContent =
+            lang === "it" ? "Accessibilità" : "Accessibility";
+          document.getElementById("opt-chiaro").textContent =
+            lang === "it" ? "Chiaro" : "Light";
+          document.getElementById("opt-scuro").textContent =
+            lang === "it" ? "Scuro" : "Dark";
+          document.getElementById("opt-nessuno").textContent =
+            lang === "it" ? "Nessun filtro" : "No filter";
+          document.getElementById("opt-protanopia").textContent = "Protanopia";
+          document.getElementById("opt-deuteranopia").textContent =
+            "Deuteranopia";
+          document.getElementById("opt-tritanopia").textContent = "Tritanopia";
+          document.getElementById("opt-acromatopsia").textContent =
+            "Achromatopsia";
+        }
+      });
+
+      document.getElementById("toggle-theme").addEventListener("click", () => {
+        const menu = document.getElementById("theme-menu");
+        menu.classList.toggle("hidden");
+      });
+
+      document.querySelectorAll(".theme-option").forEach((option) => {
+        option.addEventListener("click", () => {
+          const theme = option.dataset.theme;
+          if (theme === "scuro") {
+            document.body.classList.add("dark-theme");
+          } else {
+            document.body.classList.remove("dark-theme");
+          }
+          localStorage.setItem("tema", theme);
+          evidenziaTemaFiltro();
+        });
+      });
+
+      document.querySelectorAll(".dalton-option").forEach((option) => {
+        option.addEventListener("click", () => {
+          const dalton = option.dataset.dalton;
+          document.body.classList.remove(
+            "dalton-protanopia",
+            "dalton-deuteranopia",
+            "dalton-tritanopia",
+            "dalton-acromatopsia"
+          );
+          if (dalton !== "nessuno") {
+            document.body.classList.add(`dalton-${dalton}`);
+          }
+          localStorage.setItem("daltonismo", dalton);
+          evidenziaTemaFiltro();
+        });
+      });
+
+      // Applica tema e filtro daltonismo salvati
+      document.addEventListener("DOMContentLoaded", () => {
+        const theme = localStorage.getItem("tema") || "chiaro";
+        if (theme === "scuro") {
+          document.body.classList.add("dark-theme");
+        }
+
+        const dalton = localStorage.getItem("daltonismo");
+        if (dalton && dalton !== "nessuno") {
+          document.body.classList.add(`dalton-${dalton}`);
+        }
+      });
+
+      // esporta CSV
+      document.getElementById("btn-esporta")?.addEventListener("click", () => {
+        const sentences = document.querySelectorAll(".clickable-sentence");
+        const rows = [
+          ["Frase", "Punteggio tossicità", "Etichetta", "Altri punteggi"],
+        ];
+        sentences.forEach((span) => {
+          const d = JSON.parse(decodeURIComponent(span.dataset.detail));
+          rows.push([
+            d.text,
+            d.toxicScore,
+            d.label,
+            d.otherScores.replace(/<br>/g, " | "),
+          ]);
+        });
+
+        const csv = rows
+          .map((r) => r.map((cell) => `"${cell}"`).join(","))
+          .join("\\n");
+        const blob = new Blob([csv], { type: "text/csv" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "analisi_testo.csv";
+        a.click();
+        URL.revokeObjectURL(url);
+      });
+
+      // nuova analisi
+      document
+        .querySelector(".btn-nuova-analisi")
+        ?.addEventListener("click", () => {
+          window.location.href = "index.html";
+        });
+    </script>
+  </body>
+</html>
